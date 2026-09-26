@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libretto Marcia Francescana 2026</title>
+    <!-- Font Web Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Libreria JavaScript per la generazione automatica del QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Palette Cromatiche Armoniose */
+            --primary: #2c5282;
+            --primary-light: #ebf8ff;
+            --accent-warm: #dd6b20;
+            --accent-soft: #f6ad55;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            
+            --ritornello-bg: #ebf8ff;
+            --ritornello-border: #3182ce;
+            --ritornello-text: #1a365d;
+            --rit-tag-color: #2b6cb0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.75;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Pulsante Mobile */
+        .toggle-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1000;
+            background: linear-gradient(135deg, var(--accent-warm), #c05621);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(221, 107, 32, 0.35);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+        }
+
+        .toggle-btn:active {
+            transform: scale(0.96);
+        }
+
+        .wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigazione */
+        .sidebar {
+            width: 290px;
+            background: #ffffff;
+            border-right: 1px solid #edf2f7;
+            padding: 70px 18px 30px 18px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: -290px;
+            overflow-y: auto;
+            transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 999;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.04);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-brand {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #bee3f8;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .sidebar-categoria {
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 16px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+
+        .sidebar-categoria:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .cat-pres { background: linear-gradient(135deg, #dd6b20, #c05621); }
+        .cat-lett { background: linear-gradient(135deg, #3182ce, #2b6cb0); }
+        .cat-canti { background: linear-gradient(135deg, #d69e2e, #b7791f); }
+        .cat-ador { background: linear-gradient(135deg, #805ad5, #6b46c1); }
+
+        .sidebar ul.sub-menu {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 4px 0 12px 0;
+        }
+
+        .sidebar ul.sub-menu li {
+            margin-bottom: 4px;
+        }
+
+        .sidebar a {
+            color: var(--text-main);
+            text-decoration: none;
+            display: block;
+            padding: 7px 12px 7px 16px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.2s;
+            background-color: #f7fafc;
+            border-left: 3px solid #e2e8f0;
+        }
+
+        .sidebar a:hover {
+            background-color: var(--primary-light);
+            border-left-color: var(--primary);
+            color: var(--primary);
+            padding-left: 20px;
+        }
+
+        /* Contenuto Principale */
+        .content {
+            flex: 1;
+            padding: 80px 20px 50px 20px;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+
+        .pagina {
+            display: none;
+            animation: fadeIn 0.35s ease-out;
+        }
+
+        .pagina.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sezione-titolo {
+            color: var(--primary);
+            font-size: 1.8rem;
+            font-weight: 800;
+            border-bottom: 3px solid var(--accent-soft);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .testo-unico {
+            background-color: var(--card-bg);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.02);
+            font-size: 1.02rem;
+            border: 1px solid #edf2f7;
+        }
+
+        .hero-banner {
+            text-align: center;
+            background: linear-gradient(135deg, #fffaf0, #feebc8);
+            padding: 30px 20px;
+            border-radius: 14px;
+            border: 1px solid #fbd38d;
+            margin-bottom: 28px;
+        }
+
+        .hero-titolo {
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: #c05621;
+            margin: 0;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .hero-sottotitolo {
+            font-size: 1.15rem;
+            color: #dd6b20;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .hero-slogan {
+            display: inline-block;
+            background: #ffffff;
+            color: #2f855a;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            margin-top: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #c6f6d5;
+        }
+
+        /* --- STILE PERCORSO VERTICALE --- */
+        .percorso-container {
+            margin-top: 25px;
+            background: #f7fafc;
+            padding: 24px;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .percorso-titolo {
+            font-size: 1.15rem;
+            color: var(--primary);
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .percorso-tappe-verticale {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            max-width: 320px;
+            margin: 0 auto;
+        }
+
+        .tappa-box {
+            width: 100%;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        .tappa-1 { background-color: #e53e3e; }
+        .tappa-2 { background-color: #3182ce; }
+        .tappa-3 { background-color: #d69e2e; }
+        .tappa-4 { background-color: #805ad5; }
+        .tappa-5 { background-color: #38a169; }
+        .tappa-6 { background-color: #e53e3e; }
+
+        .freccia-giu {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #a0aec0;
+            margin: 2px 0;
+        }
+
+        /* --- STILE BOX QR CODE --- */
+        .qr-section {
+            margin-top: 35px;
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 14px;
+            text-align: center;
+            border: 1px dashed #cbd5e0;
+        }
+
+        .qr-section h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        #qrcode img {
+            border: 6px solid white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Titoli e Ritornelli */
+        .titolo-canto {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #c05621;
+            background: #fffaf0;
+            padding: 10px 16px;
+            border-left: 4px solid var(--accent-warm);
+            border-radius: 6px;
+            margin-top: 30px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .titolo-canto:first-child { margin-top: 0; }
+
+        .ritornello {
+            background-color: var(--ritornello-bg);
+            border-left: 4px solid var(--ritornello-border);
+            color: var(--ritornello-text);
+            padding: 12px 18px;
+            margin: 14px 0;
+            border-radius: 0 10px 10px 0;
+            font-weight: 500;
+        }
+
+        .rit-tag {
+            color: var(--rit-tag-color);
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        .ancora {
+            scroll-margin-top: 90px;
+            display: block;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(2px);
+            z-index: 998;
+        }
+
+        .overlay.active { display: block; }
+
+        .sosta-box {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 14px 18px;
+            margin: 18px 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        @media (min-width: 992px) {
+            .toggle-btn { display: none; }
+            .sidebar { left: 0; padding-top: 35px; }
+            .content { margin-left: 310px; }
+            .overlay { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pulsante Menu Mobile -->
+    <button class="toggle-btn" onclick="toggleMenu()">
+        <span>☰</span> <span>Indice</span>
+    </button>
+
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <div class="wrapper">
+        
+        <!-- SIDEBAR -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                🕊️ Marcia Francescana 2026
+            </div>
+            <ul>
+                <li class="sidebar-categoria cat-pres" onclick="navigaEChiudi('presentazione')">
+                    <span>📌 Presentazione</span>
+                </li>
+
+                <li class="sidebar-categoria cat-lett" onclick="mostraPagina('letture')">
+                    <span>📖 Letture marcia</span>
+                </li>
+                <ul class="sub-menu">
+                    <li><a href="#sosta1" onclick="navigaEChiudi('letture', 'sosta1')">1^ Sosta (P.zza Indipendenza)</a></li>
+                    <li><a href="#sosta2" onclick="navigaEChiudi('letture', 'sosta2')">2^ Sosta (Basilica S. Giovanni)</a></li>
+                </ul>
+
+                <li class="sidebar-categoria cat-canti" onclick="mostraPagina('canti')">
+                    <span>🎵 Canti marcia</span>
+                </li>
+                <ul class="sub-menu">
+                    <li><a href="#canto-1" onclick="navigaEChiudi('canti', 'canto-1')">Scatenate la gioia</a></li>
+                    <li><a href="#canto-2" onclick="navigaEChiudi('canti', 'canto-2')">Con Francesco profeti</a></li>
+                    <li><a href="#canto-3" onclick="navigaEChiudi('canti', 'canto-3')">Francesco vai</a></li>
+                    <li><a href="#canto-4" onclick="navigaEChiudi('canti', 'canto-4')">Annunceremo che tu</a></li>
+                    <li><a href="#canto-5" onclick="navigaEChiudi('canti', 'canto-5')">E se non fosse un sogno</a></li>
+                    <li><a href="#canto-6" onclick="navigaEChiudi('canti', 'canto-6')">Luce</a></li>
+                    <li><a href="#canto-7" onclick="navigaEChiudi('canti', 'canto-7')">Sento la gioia</a></li>
+                    <li><a href="#canto-8" onclick="navigaEChiudi('canti', 'canto-8')">Emmanuel</a></li>
+                </ul>
+
+                <li class="sidebar-categoria cat-ador" onclick="mostraPagina('adorazione')">
+                    <span>☀️ Adorazione</span>
+                </li>
+                <ul class="sub-menu">
+                    <li><a href="#adorazione-1" onclick="navigaEChiudi('adorazione', 'adorazione-1')">Momento 1</a></li>
+                    <li><a href="#adorazione-2" onclick="navigaEChiudi('adorazione', 'adorazione-2')">Momento 2</a></li>
+                </ul>
+            </ul>
+        </nav>
+
+        <!-- CONTENUTO PRINCIPALE -->
+        <main class="content">
+
+            <!-- PAGINA PRESENTAZIONE -->
+            <section id="pagina-presentazione" class="pagina active">
+                <h1 class="sezione-titolo">📌 Presentazione</h1>
+
+                <div class="testo-unico">
+                    <div class="hero-banner">
+                        <div class="hero-titolo">PASSI DI SOLIDARIETÀ</div>
+                        <div class="hero-sottotitolo">Marcia Francescana 2026</div>
+                        <div class="hero-slogan">«Un piccolo gesto, una grande differenza»</div>
+                    </div>
+
+                    <h3 style="color: var(--primary); margin-top:0;">❤️ Perché questa Marcia?</h3>
+                    <p>
+                        La <strong>Marcia Francescana 2026</strong> nasce dal desiderio della <em>Gioventù Francescana (Gi.Fra.) di Vittoria</em> di percorrere insieme le vie della città per testimoniare la gioia del Vangelo e il valore dell'accoglienza fraterna.
+                    </p>
+                    <p>
+                        Ispirati dall'esempio di San Francesco d'Assisi, camminiamo per abbattere i muri dell'indifferenza e riscoprirci tutti fratelli. Ogni passo condiviso vuole essere un segno di speranza, un invito ad aprirsi al prossimo e un richiamo alla responsabilità verso i più deboli e verso il creato.
+                    </p>
+
+                    <hr style="border:0; border-top: 1px solid #edf2f7; margin: 28px 0;">
+
+                    <!-- PERCORSO CON FRECCE VERSO IL BASSO -->
+                    <div class="percorso-container">
+                        <div class="percorso-titolo">📍 IL PERCORSO DELLA MARCIA</div>
+                        <div class="percorso-tappe-verticale">
+                            <div class="tappa-box tappa-1">PARTENZA<br><small style="font-weight: normal;">Piazza del Popolo</small></div>
+                            <span class="freccia-giu">↓</span>
+                            <div class="tappa-box tappa-2">Via R. Cancelleri</div>
+                            <span class="freccia-giu">↓</span>
+                            <div class="tappa-box tappa-3">Piazza Indipendenza</div>
+                            <span class="freccia-giu">↓</span>
+                            <div class="tappa-box tappa-4">Via dei Mille</div>
+                            <span class="freccia-giu">↓</span>
+                            <div class="tappa-box tappa-5">Via Cavour</div>
+                            <span class="freccia-giu">↓</span>
+                            <div class="tappa-box tappa-6">ARRIVO<br><small style="font-weight: normal;">Chiesa S. Giovanni Battista</small></div>
+                        </div>
+                    </div>
+
+                    <!-- GENERATORE DI QR CODE -->
+                    <div class="qr-section">
+                        <h4>📲 Condividi il Libretto Digitale</h4>
+                        <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:12px;">
+                            Fai inquadrare questo QR Code con la fotocamera per aprire direttamente questo libretto.
+                        </p>
+                        <div id="qrcode"></div>
+                        <small style="color: var(--text-muted); font-size: 0.78rem;">
+                            (Ispirato alla marcia della Gioventù Francescana)
+                        </small>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- PAGINA LETTURE MARCIA -->
+            <section id="pagina-letture" class="pagina">
+                <h1 class="sezione-titolo">📖 Letture marcia</h1>
+
+                <div class="testo-unico">
+                    <strong>🌱 Gesto iniziale:</strong> Ad ogni partecipante verrà consegnata una striscia di iuta, che dovrà custodire durante tutta la marcia.<br>
+                    <strong>🚶 Inizio:</strong> il corteo si muoverà fino a Piazza Indipendenza in pieno stile francescano tra musica e canti per far gioire la città.<br>
+                    <br>
+                    <span id="sosta1" class="ancora"></span>
+                    <div class="sosta-box">
+                        <strong>📍 1^ SOSTA (P.zza Indipendenza):</strong><br>
+                        Presentazione del Coro "Noi Posso" ed esibizione<br>
+                        <strong>Tema: FARSI PROSSIMI</strong>
+                    </div>
+                    <strong>Guida:</strong> «Camminare significa mettere un piede davanti all'altro e accettare di uscire dalla propria zona di comfort. Nel suo cammino, Francesco incontra ciò che più temeva: il lebbroso. Il miracolo della solidarietà non avviene quando facciamo un calcolo conveniente, ma quando abbiamo il coraggio di toccare la ferita dell'altro, superando la tentazione del rifiuto e del giudizio.»<br><br>
+                    <strong>Lettore 1 (Dal Testamento di San Francesco - FF 110):</strong> «Il Signore diede a me, frate Francesco, di incominciare a fare penitenza così: quando ero nei peccati mi sembrava troppo amaro vedere i lebbrosi, e il Signore stesso mi condusse tra loro e usai con essi misericordia. E allontanandomi da essi, ciò che mi sembrava amaro mi fu cambiato in dolcezza di animo e di corpo. E dopo di ciò, stetti un poco e uscii dal secolo.»<br><br>
+                    <strong>Lettore 2 (Meditazione):</strong> «Oggi i "lebbrosi" hanno volti diversi: sono i poveri ai margini delle nostre strade, chi ha perso il lavoro, gli immigrati che cercano un futuro, chi si sente rifiutato dalla società per i propri sbagli. La solidarietà cristiana non è elemosina dall'alto verso il basso, ma è un incontro d'amore tra uguali. Francesco non si è limitato a dare una moneta: ha abbracciato il lebbroso. È nell'abbraccio con il soffrente che ciò che ci sembrava amaro e spaventoso si trasforma nella dolcezza più grande che l'anima possa sperimentare.»<br><br>
+                    <strong>Preghiera Comunitaria (tutti insieme):</strong> «Signore Gesù, che lungo le strade della Palestina ti sei fermato per toccare gli intoccabili e sanare i cuori spezzati, dona a tutti noi un pizzico del coraggio francescano. Liberaci dalla paura di chi è diverso da noi, dai pregiudizi che categorizzano gli uomini, dalla tentazione di voltarci dall'altra parte. Insegna alle nostre mani a farsi carezza e alla nostra presenza a farsi rifugio per chiunque si senta scartato dalla vita. Amen.»<br>
+                    <br>
+                    <em>*la marcia proseguirà animando le vie della città fino ad arrivare a piazza San Giovanni*</em><br>
+                    <br>
+                    <span id="sosta2" class="ancora"></span>
+                    <div class="sosta-box">
+                        <strong>📍 2^ SOSTA (Basilica S. Giovanni Battista):</strong><br>
+                        <strong>Gesto:</strong> ogni partecipante dovrà annodare la sua striscia con quella del vicino creando, così, la rete della solidarietà<br>
+                        Esibizione del coro "Noi Posso" dentro la basilica<br>
+                        <strong>Tema: LA FRATELLANZA UNIVERSALE</strong>
+                    </div>
+                    <strong>Guida:</strong> «Siamo giunti a questa sosta dopo essere partiti dalla piazza del paese, luogo dell'evento solidale. La piazza è il simbolo del mondo, dell'incontro tra culture, storie e bisogni diversi. Nel magnifico contesto dell'Ottocentenario Francescano, ricordiamo che per Francesco non esistono estranei: ogni persona è "fratello" o "sorella", e persino il sole, la luna e la terra sono parte dell'unica grande famiglia di Dio.»<br><br>
+                    <strong>Lettore 1 (Dal Cantico delle Creature - FF 263):</strong> «Sia lodato, mio Signore, per quelli che perdonano per il Tuo amore e sopportano malattie e tribolazioni. Beati quelli che le sopporteranno in pace, perché da Te, o Altissimo, saranno incoronati. Sia lodato, mio Signore, per sorella nostra madre terra, la quale ci nutre e ci governa, e produce diversi frutti con fiori colorati ed erba.»<br><br>
+                    <strong>Lettore 2 (Meditazione):</strong> «Non c'è vera solidarietà verso gli uomini se non c'è anche la cura per la nostra casa comune. L'anno giubilare ci richiama alla giustizia sociale: al ridistribuire le risorse, al donare dignità a chi non ce l'ha, al prenderci cura delle future generazioni custodendo il creato. Essere una Chiesa Giubilare significa essere una luce accesa nel mondo, una comunità che non vive ripiegata su se stessa, ma che spalanca le braccia a tutte le sofferenze del pianeta: dalle guerre ai cambiamenti climatici, dalle ingiustizie sociali alle nuove povertà spirituali.»<br><br>
+                    <strong>Preghiera Comunitaria (tutti insieme):</strong> «Padre buono, Creatore dell'universo, facci sentire membra di un'unica famiglia umana. Rendi la nostra parrocchia un cantiere permanente di pace, un faro di giustizia e una sorgente di speranza. Fa' che l'esperienza di questa marcia non rimanga solo una parentesi, ma si trasformi in uno stile di vita quotidiano, operoso e fraterno, capace di custodire il creato e di servire l'uomo. Per Cristo nostro Signore. Amen.»<br><br>
+                    <strong>🎤 Testimonianza:</strong> presso la Basilica di San Giovanni Battista a cura del presidente regionale Gi.fra Matteo Leanza
+                </div>
+            </section>
+
+            <!-- PAGINA CANTI MARCIA -->
+            <section id="pagina-canti" class="pagina canti-pagina">
+                <h1 class="sezione-titolo">🎵 Canti marcia</h1>
+
+                <div class="testo-unico">
+                    <span id="canto-1" class="ancora"></span>
+                    <div class="titolo-canto">Scatenate la gioia 🎶</div>
+                    Uscite dalle case, voi che siete chiusi dentro;<br>
+                    venite qui tra noi, qualcosa sta accadendo;<br>
+                    qui non piove, qui c'è solo sole,<br>
+                    fate in fretta, mancate solo voi.<br>
+                    <br>
+                    Muovi i piedi tu, tu che stai ascoltando,<br>
+                    e le mani tu, per tenere il tempo;<br>
+                    segui il ritmo, di questa canzone,<br>
+                    tutti pronti, possiamo dare il via...<br>
+
+                    <div class="ritornello">
+                        <span class="rit-tag">RIT:</span><br>
+                        Sca-sca-sca, scatenate la gio-gio-gio<br>
+                        Oggi qui si fa fe-fe-fe oggi è giorno di festa (x2)<br>
+                        Scatenate la gioia, oggi qui si fa festa,<br>
+                        dai, cantate con noi, qui la festa siamo noi.
+                    </div>
+                    <br>
+
+                    <span id="canto-2" class="ancora"></span>
+                    <div class="titolo-canto">Con Francesco profeti tra la gente 🕊️</div>
+                    Quando andate per le strade del mondo, lodatelo!<br>
+                    Quando siete ancora lungo la via, amatelo!<br>
+                    Quando stanchi vi buttate per terra, pregatelo!<br>
+
+                    <div class="ritornello">
+                        <span class="rit-tag">RIT:</span><br>
+                        Il Signore Dio (Loda loda lodatelo)<br>
+                        onnipotente (Loda loda lodatelo)<br>
+                        noi vi annunciamo (Alleluia, alleluia)<br>
+                        con semplicità (Loda loda lodatelo)<br>
+                        e fedeltà: (Loda loda lodatelo)<br>
+                        lodate il Signor! (Alleluia, alleluia)
+                    </div>
+
+                    Quando vedi un fratello un po’ triste, sorridigli!<br>
+                    Se ti accorgi che è rimasto un po’ indietro, aspettalo!<br>
+                    Se il suo zaino è troppo pesante, aiutalo!<br>
+                    <br>
+                    <em>Il Signore Dio … <span class="rit-tag">(RIT)</span></em><br>
+                    Alleluia, alleluia, alleluia, alleluia<br>
+                    <em>Il Signore Dio … <span class="rit-tag">(RIT)</span></em><br>
+                    Alleluia, alleluia, alleluia, alleluia<br>
+                    <br>
+
+                    <span id="canto-3" class="ancora"></span>
+                    <div class="titolo-canto">Francesco vai 𝜏</div>
+                    Quello che io vivo non mi basta più,<br>
+                    tutto quel che avevo non mi serve più:<br>
+                    io cercherò, quello che davvero vale,<br>
+                    e non più il servo ma il padrone seguirò !<br>
+
+                    <div class="ritornello">
+                        <span class="rit-tag">RIT:</span><br>
+                        Francesco, vai, ripara la mia casa!<br>
+                        Francesco, vai, non vedi che è in rovina?<br>
+                        non temere io sarò con te dovunque andrai.<br>
+                        Francesco, vai ! Francesco, vai !
+                    </div>
+
+                    Nel buio e nel silenzio ti ho cercato, Dio;<br>
+                    dal fondo della notte ho alzato il grido mio<br>
+                    e griderò finché non avrò risposta<br>
+                    per conoscere la tua volontà.<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    Altissimo Signore, cosa vuoi da me ?<br>
+                    Tutto quel che avevo l’ ho donato a Te.<br>
+                    Ti seguirò nella gioia e nel dolore<br>
+                    e della vita mia una lode a Te farò<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+
+                    <span id="canto-4" class="ancora"></span>
+                    <div class="titolo-canto">Annunceremo che tu 📢</div>
+                    
+                    <div class="ritornello">
+                        <span class="rit-tag">RIT:</span><br>
+                        Annunceremo che tu sei verità<br>
+                        Lo grideremo dai tetti della nostra città<br>
+                        Senza paura, anche tu, lo puoi cantare
+                    </div>
+
+                    E non temere dai, che non ci vuole poi tanto<br>
+                    Quello che non si sa, non resterà nascosto<br>
+                    Se ti parlo nel buio, lo dirai nella luce<br>
+                    Ogni giorno è il momento di credere in me<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    Con il coraggio tu porterai la parola che salva<br>
+                    Anche se ci sarà chi non vuole accogliere il dono<br>
+                    Tu non devi fermarti, ma continua a lottare<br>
+                    Il mio Spirito sempre ti accompagnerà<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    Non ti abbandono mai, io sono il Dio fedele<br>
+                    Conosco il cuore tuo, ogni tuo pensiero mi è noto<br>
+                    La tua vita è preziosa, vale più di ogni cosa<br>
+                    È il segno più grande del mio amore per te<br>
+                    <br>
+                    <span class="rit-tag">RIT (X2)</span><br>
+                    <br>
+
+                    <span id="canto-5" class="ancora"></span>
+                    <div class="titolo-canto">E se non fosse un sogno 🌟</div>
+                    
+                    <div class="ritornello">
+                        <span class="rit-tag">RIT:</span><br>
+                        E se non fosse un sogno se tutto fosse vero?<br>
+                        Se fosse vero Amore che il mondo fa girar?<br>
+                        E se non fosse un sogno se tutto fosse vero?<br>
+                        Potresti far qualcosa per rinnovar con noi<br>
+                        l’intera umanità ah ah ah ah
+                    </div>
+
+                    Se coraggio avrai, alto volerai<br>
+                    verso un orizzonte che non è più utopia<br>
+                    e quel mondo in cui non speravi più<br>
+                    lo vedremo insieme io e te.<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    Se coraggio avrai, seme ti farai<br>
+                    che caduto in terra vi marcisce in umiltà.<br>
+                    Piccolo così sembra nulla, ma<br>
+                    un grandioso albero sarà.<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    Se coraggio avrai, certo crederai<br>
+                    che la vera vita dalla morte nascerà.<br>
+                    La fragilità forza diverrà<br>
+                    quando le sue orme seguirai.<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+
+                    <span id="canto-6" class="ancora"></span>
+                    <div class="titolo-canto">Luce ☀️</div>
+                    C’è il segreto della libertà<br>
+                    Quella vera Batte dentro di te<br>
+                    È come risvegliarsi un mattino<br>
+                    Col sole Dopo un lungo inverno<br>
+                    Nel soffrire Mio Signore Ho incontrato Te Dio amore<br>
+                    Nel perdono Nel gioire Ho capito che sei luce per me<br>
+
+                    <div class="ritornello">
+                        <span class="rit-tag">RIT:</span><br>
+                        Signore sono qui Per dirti ancora sì, Luce<br>
+                        Fammi scoppiare di Gioia di vivere Luce<br>
+                        Fammi strumento per Portare attorno a me Luce<br>
+                        E chi è vicino a me Sappia che tutto in Te È Luce
+                    </div>
+
+                    Voglio ringraziarti Signore<br>
+                    Per la vita Che mi hai ridonato<br>
+                    So che sei nell'amore Degli amici<br>
+                    Che ora ho incontrato<br>
+                    Nel soffrire Mio Signore Ho incontrato Te Dio amore<br>
+                    Nel perdono Nel gioire Ho capito che Sei luce per me<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    E con le lacrime agli occhi E le mie mani alzate verso Te Gesù<br>
+                    Con la speranza nel cuore E la tua luce in me paura non ho più<br>
+                    <br>
+
+                    <span id="canto-7" class="ancora"></span>
+                    <div class="titolo-canto">Sento la gioia 😊</div>
+                    
+                    <div class="ritornello">
+                        <span class="rit-tag">RIT.</span><br>
+                        Sento la gioia, gioia, gioia<br>
+                        sento la gioia, gioia, gioia<br>
+                        dentro il mio cuore, sento la gioia. (x2)
+                    </div>
+
+                    Perché credo nella vita,<br>
+                    perché spero ogni mattina,<br>
+                    di iniziare il giorno con amore. (x2)<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    Perché vivo nel presente,<br>
+                    condivido con la gente,<br>
+                    il mio canto, i sogni e la speranza. (x2)<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    Perché credo sempre in Dio,<br>
+                    Lui mi guida ed è mio amico,<br>
+                    Lui è veramente qui vicino. (x2)<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    Perché so che nel mio cuore<br>
+                    non existe il rancore,<br>
+                    prego per la pace e per l’amore. (x2)<br>
+                    <br>
+                    <span class="rit-tag">RIT.</span><br>
+                    <br>
+                    Gioia, gioia, gioia. (x4)<br>
+                    Sento la gioia!<br>
+                    <br>
+
+                    <span id="canto-8" class="ancora"></span>
+                    <div class="titolo-canto">Emmanuel ✝️</div>
+                    Dall'orizzonte una grande luce viaggia nella storia<br>
+                    E lungo gli anni ha vinto il buio facendosi memoria<br>
+                    E illuminando la nostra vita, chiaro ci rivela<br>
+                    Che non si vive se non si cerca la verità<br>
+                    <br>
+                    Un grande dono che Dio ci ha fatto è Cristo, il suo figlio<br>
+                    L'umanità è rinnovata, è in lui salvata<br>
+                    È vero uomo, è vero Dio, è il pane della vita<br>
+                    Che ad ogni uomo, ai suoi fratelli ridonerà<br>
+
+                    <div class="ritornello">
+                        <span class="rit-tag">RIT:</span><br>
+                        Siamo qui Sotto la stessa luce<br>
+                        Sotto la sua croce Cantando ad una voce<br>
+                        Emmanuel Emmanuel, Emmanuel<br>
+                        Emmanuel, Emmanuel, Emmanuel
+                    </div>
+
+                    La morte è uccisa, la vita ha vinto, è Pasqua in tutto il mondo<br>
+                    Un vento soffia in ogni uomo lo Spirito fecondo<br>
+                    Che porta avanti nella storia la Chiesa, sua sposa<br>
+                    Sotto lo sguardo di Maria, comunità<br>
+                    <br>
+                    Noi debitori del passato, di secoli di storia<br>
+                    Di vite date per amore, di santi che han creduto<br>
+                    Di uomini che ad alta quota insegnano a volare<br>
+                    Di chi la storia sa cambiare, come Gesù<br>
+                    <br>
+                    <span class="rit-tag">RIT (X2)</span>
+                </div>
+            </section>
+
+            <!-- PAGINA ADORAZIONE -->
+            <section id="pagina-adorazione" class="pagina adorazione-pagina">
+                <h1 class="sezione-titolo">☀️ Adorazione</h1>
+
+                <div class="testo-unico">
+                    <span id="adorazione-1" class="ancora"></span>
+                    <div class="titolo-canto">Momento 1 🙏</div>
+                    Incolla qui il testo dell'adorazione...<br><br>
+
+                    <span id="adorazione-2" class="ancora"></span>
+                    <div class="titolo-canto">Momento 2 🙏</div>
+                    Incolla qui il testo dell'adorazione...
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Generazione automatica del QR Code al caricamento
+        window.addEventListener('DOMContentLoaded', (event) => {
+            // Rileva automaticamente l'indirizzo del sito dove viene aperto il file
+            var currentUrl = window.location.href;
+            
+            new QRCode(document.getElementById("qrcode"), {
+                text: currentUrl,
+                width: 140,
+                height: 140,
+                colorDark : "#2c5282",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        });
+
+        function toggleMenu() {
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        function mostraPagina(nomePagina) {
+            var pagine = document.querySelectorAll('.pagina');
+            pagine.forEach(function(pag) {
+                pag.classList.remove('active');
+            });
+
+            var paginaTarget = document.getElementById('pagina-' + nomePagina);
+            if (paginaTarget) {
+                paginaTarget.classList.add('active');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function navigaEChiudi(nomePagina, idAncora) {
+            mostraPagina(nomePagina);
+            
+            if (idAncora) {
+                setTimeout(function() {
+                    var el = document.getElementById(idAncora);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 120);
+            }
+
+            var sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('active')) {
+                toggleMenu();
+            }
+        }
+    </script>
+
+</body>
+</html>
